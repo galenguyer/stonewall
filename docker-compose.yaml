@@ -1,0 +1,77 @@
+version: "3"
+services:
+  traefik:
+    image: traefik:2.4.9
+    container_name: traefik
+    command:
+      - "--providers.docker=true"
+      - "--providers.file.directory=/conf/"
+      - "--providers.file.watch=true"
+      - "--api"
+      - "--entrypoints.http.address=:80"
+      - "--entrypoints.https.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare"
+      - "--certificatesresolvers.letsencrypt.acme.email=stonewall@galenguyer.com"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/certs/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--certificatesresolvers.letsencrypt.acme.keyType=RSA4096"
+      - "--entrypoints.https.http.tls.certResolver=letsencrypt"
+      - "--entrypoints.https.http.tls.domains[0].main=galenguyer.com"
+      - "--entrypoints.https.http.tls.domains[0].sans=*.galenguyer.com"
+      - "--entrypoints.https.http.tls.domains[1].main=antifausa.net"
+      - "--entrypoints.https.http.tls.domains[1].sans=*.antifausa.net"
+      - "--accesslog=true"
+      - "--accesslog.filepath=/traefik/access.log"
+      - "--log.level=DEBUG"
+      - "--log.filePath=/traefik/traefik.log"
+      - "--log.filePath=/dev/stdout"
+    environment:
+      - "CF_API_EMAIL=${CLOUDFLARE_API_EMAIL}"
+      - "CF_API_KEY=${CLOUDFLARE_API_KEY}"
+    labels:
+      - "traefik.enable=true"
+      # hsts middleware
+      - "traefik.http.middlewares.hsts.headers.forcestsheader=true"
+      - "traefik.http.middlewares.hsts.headers.stsseconds=63072000"
+      # hsts plus (add preloading and subdomains)
+      - "traefik.http.middlewares.hstsplus.headers.stspreload=true"
+      - "traefik.http.middlewares.hstsplus.headers.stsincludesubdomains=true"
+      # secure middleware
+      - "traefik.http.middlewares.secure.headers.browserxssfilter=true"
+      - "traefik.http.middlewares.secure.headers.contenttypenosniff=true"
+      - "traefik.http.middlewares.secure.headers.customresponseheaders.Permissions-Policy=geolocation=(), midi=(), sync-xhr=(), microphone=(), camera=(), magnetometer=(), gyroscope=(), fullscreen=(), payment=()"
+      - "traefik.http.middlewares.secure.headers.framedeny=true"
+      - "traefik.http.middlewares.secure.headers.customframeoptionsvalue=SAMEORIGIN"
+      - "traefik.http.middlewares.secure.headers.sslredirect=true"
+      - "traefik.http.middlewares.secure.headers.referrerpolicy=strict-origin"
+      - "traefik.http.middlewares.secure.headers.customresponseheaders.Server=GNU Netcat 0.7.1"
+      - "traefik.http.middlewares.secure.headers.customresponseheaders.Expect-CT=enforce,max-age=86400"
+      # tohttps middleware
+      - "traefik.http.middlewares.tohttps.redirectscheme.scheme=https"
+      # traefik host rules
+      - "traefik.http.routers.traefik.rule=Host(`traefik.antifausa.net`)"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.middlewares=secure,hsts"
+      - "traefik.http.routers.traefik.entrypoints=https"
+      - "traefik.http.routers.traefik-insecure.rule=Host(`traefik.antifausa.net`)"
+      - "traefik.http.routers.traefik-insecure.middlewares=tohttps"
+      - "traefik.http.routers.traefik-insecure.entrypoints=http"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        read_only: true
+      - type: bind
+        source: ./config/traefik/
+        target: /conf/
+        read_only: true
+      - type: volume
+        source: traefik-certs
+        target: /certs/
+
+volumes:
+  traefik-certs:
