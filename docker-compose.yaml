@@ -60,6 +60,8 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    networks:
+      - traefik
     volumes:
       - type: bind
         source: /var/run/docker.sock
@@ -72,6 +74,14 @@ services:
       - type: volume
         source: traefik-certs
         target: /certs/
+
+networks:
+  traefik:
+    name: traefik
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.10.0.0/16
 
 volumes:
   traefik-certs:
