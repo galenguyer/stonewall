@@ -35,6 +35,8 @@ services:
       - "traefik.http.middlewares.hsts.headers.forcestsheader=true"
       - "traefik.http.middlewares.hsts.headers.stsseconds=63072000"
       # hsts plus (add preloading and subdomains)
+      - "traefik.http.middlewares.hstsplus.headers.forcestsheader=true"
+      - "traefik.http.middlewares.hstsplus.headers.stsseconds=63072000"
       - "traefik.http.middlewares.hstsplus.headers.stspreload=true"
       - "traefik.http.middlewares.hstsplus.headers.stsincludesubdomains=true"
       # secure middleware
