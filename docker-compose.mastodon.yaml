@@ -1,0 +1,142 @@
+services:
+  mastodon-redis:
+    image: redis:5.0-alpine
+    container_name: mastodon-redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - traefik
+    volumes:
+      - type: volume
+        source: mastodon-redis
+        target: /data
+
+  mastodon-postgres:
+    image: postgres:9.6-alpine
+    container_name: mastodon-postgres
+    restart: unless-stopped
+    environment:
+      - "POSTGRES_PASSWORD=${MASTODON_POSTGRES_PASSWORD}"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - traefik
+    volumes:
+      - type: volume
+        source: mastodon-postgres
+        target: /var/lib/postgresql/data
+
+  mastodon-web:
+    image: tootsuite/mastodon:v3.3.0
+    container_name: mastodon-web
+    restart: unless-stopped
+    env_file: .env.mastodon
+    command: bash -c "rm -f /mastodon/tmp/pids/server.pid; RAILS_ENV=production bundle exec rails s -p 3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider --proxy=off localhost:3000/health || exit 1"]
+    environment:
+      - POSTGRES_PASSWORD="${MASTODON_POSTGRES_PASSWORD}"
+    depends_on:
+      - traefik
+      - mastodon-postgres
+      - mastodon-redis
+      - mastodon-sidekiq
+      - mastodon-streaming
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mastodon-web.rule=Host(`is-heckin.gay`)"
+      - "traefik.http.routers.mastodon-web.entrypoints=https"
+      - "traefik.http.routers.mastodon-web.service=mastodon-web"
+      - "traefik.http.routers.mastodon-web.tls=true"
+      - "traefik.http.routers.mastodon-web.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.mastodon-web.middlewares=secure"
+      - "traefik.http.routers.mastodon-web-insecure.rule=Host(`is-heckin.gay`)"
+      - "traefik.http.routers.mastodon-web-insecure.entrypoints=http"
+      - "traefik.http.routers.mastodon-web-insecure.service=mastodon-web"
+      - "traefik.http.services.mastodon-web.loadbalancer.server.port=3000"
+    networks:
+      - traefik
+    volumes:
+      - type: volume
+        source: mastodon
+        target: /mastodon/public/system
+
+  mastodon-streaming:
+    image: tootsuite/mastodon:v3.3.0
+    container_name: mastodon-streaming
+    restart: unless-stopped
+    env_file: .env.mastodon
+    command: node ./streaming
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider --proxy=off localhost:4000/api/v1/streaming/health || exit 1"]
+    depends_on:
+      - mastodon-postgres
+      - mastodon-redis
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mastodon-streaming.rule=(Host(`is-heckin.gay`) && PathPrefix(`/api/v1/streaming`))"
+      - "traefik.http.routers.mastodon-streaming.entrypoints=https"
+      - "traefik.http.routers.mastodon-streaming.service=mastodon-streaming"
+      - "traefik.http.routers.mastodon-streaming.tls=true"
+      - "traefik.http.routers.mastodon-streaming.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.mastodon-streaming.middlewares=secure"
+      - "traefik.http.routers.mastodon-streaming-insecure.rule=(Host(`is-heckin.gay`) && PathPrefix(`/api/v1/streaming`))"
+      - "traefik.http.routers.mastodon-streaming-insecure.entrypoints=http"
+      - "traefik.http.routers.mastodon-streaming-insecure.service=mastodon-streaming"
+      - "traefik.http.services.mastod-streaming.loadbalancer.server.port=4000"
+    networks:
+      - traefik
+
+  mastodon-sidekiq:
+    image: tootsuite/mastodon:v3.3.0
+    container_name: mastodon-sidekiq
+    restart: unless-stopped
+    env_file: .env.mastodon
+    command: bundle exec sidekiq
+    labels:
+      - "traefik.enable=false"
+    depends_on:
+      - mastodon-postgres
+      - mastodon-redis
+    volumes:
+      - type: volume
+        source: mastodon
+        target: /mastodon/public/system
+    networks:
+      - traefik
+
+  mastodon-es:
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.10
+    container_name: mastodon-es
+    restart: unless-stopped
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "cluster.name=es-mastodon"
+      - "discovery.type=single-node"
+      - "bootstrap.memory_lock=true"
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - traefik
+    healthcheck:
+      test: ["CMD-SHELL", "curl --silent --fail localhost:9200/_cluster/health || exit 1"]
+    volumes:
+      - type: volume
+        source: mastodon-es
+        target: /usr/share/elasticsearch/data
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+
+volumes:
+  mastodon-redis:
+  mastodon-postgres:
+  mastodon-es:
+  mastodon:
