@@ -1,4 +1,6 @@
 # stonewall
 
-## generate env template
-`sed 's/=.*$//' .env > template.env`
+## generate env templates
+    sed 's/=.*$//' .env > template.env
+    sed 's/=.*$//' .env.mastodon > template.env.mastodon
+
