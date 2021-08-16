@@ -1,0 +1,66 @@
+services:
+  registry:
+    image: registry:2
+    container_name: registry
+    restart: unless-stopped
+    environment:
+      - REGISTRY_HTTP_ADDR=0.0.0.0:5000
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - traefik
+    volumes:
+      - type: volume
+        source: registry
+        target: /var/lib/registry
+
+  registry-proxy:
+    image: galenguyer/registry-proxy:latest
+    container_name: registry-proxy
+    restart: unless-stopped
+    depends_on:
+      - traefik
+      - registry
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.registry.rule=(Host(`cr.galenguyer.com`) && PathPrefix(`/v2`))"
+      - "traefik.http.routers.registry.entrypoints=https"
+      - "traefik.http.routers.registry.service=registry"
+      - "traefik.http.routers.registry-insecure.rule=(Host(`cr.galenguyer.com`) && PathPrefix(`/v2`))"
+      - "traefik.http.routers.registry-insecure.entrypoints=http"
+      - "traefik.http.routers.registry-insecure.middlewares=tohttps"
+      - "traefik.http.services.registry.loadbalancer.server.port=80"
+    networks:
+      - traefik
+    links:
+      - registry:registry
+    volumes:
+      - type: bind
+        source: ./config/registry/registry-proxy/auth
+        target: /auth
+
+  reg:
+    image: cr.galenguyer.com/registry/reg
+    container_name: reg
+    command:
+      - "server"
+      - "--registry=cr.galenguyer.com"
+      - "--interval=5m0s"
+    restart: unless-stopped
+    depends_on:
+      - traefik
+      - registry-proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.reg.rule=Host(`cr.galenguyer.com`)"
+      - "traefik.http.routers.reg.entrypoints=https"
+      - "traefik.http.routers.reg.service=reg"
+      - "traefik.http.routers.reg-insecure.rule=Host(`cr.galenguyer.com`)"
+      - "traefik.http.routers.reg-insecure.entrypoints=http"
+      - "traefik.http.routers.reg-insecure.middlewares=tohttps"
+      - "traefik.http.services.reg.loadbalancer.server.port=8080"
+    networks:
+      - traefik
+
+volumes:
+  registry:
