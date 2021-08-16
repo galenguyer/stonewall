@@ -52,11 +52,11 @@ services:
       # tohttps middleware
       - "traefik.http.middlewares.tohttps.redirectscheme.scheme=https"
       # traefik host rules
-      - "traefik.http.routers.traefik.rule=Host(`traefik.antifausa.net`)"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.galenguyer.com`)"
       - "traefik.http.routers.traefik.service=api@internal"
       - "traefik.http.routers.traefik.middlewares=secure,hsts"
       - "traefik.http.routers.traefik.entrypoints=https"
-      - "traefik.http.routers.traefik-insecure.rule=Host(`traefik.antifausa.net`)"
+      - "traefik.http.routers.traefik-insecure.rule=Host(`traefik.galenguyer.com`)"
       - "traefik.http.routers.traefik-insecure.middlewares=tohttps"
       - "traefik.http.routers.traefik-insecure.entrypoints=http"
     ports:
@@ -70,7 +70,7 @@ services:
         target: /var/run/docker.sock
         read_only: true
       - type: bind
-        source: ./config/traefik/
+        source: ./config/traefik/conf/
         target: /conf/
         read_only: true
       - type: volume
