@@ -22,9 +22,9 @@ services:
       - "--entrypoints.https.http.tls.domains[1].main=antifausa.net"
       - "--entrypoints.https.http.tls.domains[1].sans=*.antifausa.net"
       - "--accesslog=true"
-      - "--accesslog.filepath=/traefik/access.log"
+      - "--accesslog.filepath=/traefik/logs/access.log"
       - "--log.level=DEBUG"
-      - "--log.filePath=/traefik/traefik.log"
+      - "--log.filePath=/traefik/logs/traefik.log"
       - "--log.filePath=/dev/stdout"
     environment:
       - "CF_API_EMAIL=${TRAEFIK_CF_API_EMAIL}"
@@ -72,6 +72,9 @@ services:
       - type: bind
         source: ./config/traefik/conf/
         target: /conf/
+      - type: bind
+        source: /var/log/traefik/
+        target: /traefik/logs/
         read_only: true
       - type: volume
         source: traefik-certs
