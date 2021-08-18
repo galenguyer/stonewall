@@ -23,13 +23,13 @@ services:
       - registry
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.registry.rule=(Host(`cr.galenguyer.com`) && PathPrefix(`/v2`))"
-      - "traefik.http.routers.registry.entrypoints=https"
-      - "traefik.http.routers.registry.service=registry"
-      - "traefik.http.routers.registry-insecure.rule=(Host(`cr.galenguyer.com`) && PathPrefix(`/v2`))"
-      - "traefik.http.routers.registry-insecure.entrypoints=http"
-      - "traefik.http.routers.registry-insecure.middlewares=tohttps"
-      - "traefik.http.services.registry.loadbalancer.server.port=80"
+      - "traefik.http.routers.registry-proxy.rule=(Host(`cr.galenguyer.com`) && PathPrefix(`/v2`))"
+      - "traefik.http.routers.registry-proxy.entrypoints=https"
+      - "traefik.http.routers.registry-proxy.service=registry-proxy"
+      - "traefik.http.routers.registry-proxy-insecure.rule=(Host(`cr.galenguyer.com`) && PathPrefix(`/v2`))"
+      - "traefik.http.routers.registry-proxy-insecure.entrypoints=http"
+      - "traefik.http.routers.registry-proxy-insecure.middlewares=tohttps"
+      - "traefik.http.services.registry-proxy.loadbalancer.server.port=80"
     networks:
       - traefik
     links:
