@@ -14,7 +14,7 @@ services:
       - "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare"
       - "--certificatesresolvers.letsencrypt.acme.email=stonewall@galenguyer.com"
       - "--certificatesresolvers.letsencrypt.acme.storage=/certs/acme.json"
-      - "--certificatesresolvers.letsencrypt.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--certificatesresolvers.letsencrypt.acme.caServer=https://acme-v02.api.letsencrypt.org/directory"
       - "--certificatesresolvers.letsencrypt.acme.keyType=RSA4096"
       - "--entrypoints.https.http.tls.certResolver=letsencrypt"
       - "--entrypoints.https.http.tls.domains[0].main=galenguyer.com"
