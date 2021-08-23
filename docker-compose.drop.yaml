@@ -1,0 +1,22 @@
+services:
+  drop:
+    image: cr.galenguyer.com/nginx/nginx:latest
+    container_name: drop
+    restart: unless-stopped
+    depends_on:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.drop.rule=Host(`i.galenguyer.com`)"
+      - "traefik.http.routers.drop.entrypoints=https"
+      - "traefik.http.routers.drop.service=drop"
+      - "traefik.http.routers.drop-insecure.rule=Host(`i.galenguyer.com`)"
+      - "traefik.http.routers.drop-insecure.entrypoints=http"
+      - "traefik.http.routers.drop-insecure.middlewares=tohttps"
+      - "traefik.http.services.drop.loadbalancer.server.port=80"
+    networks:
+      - traefik
+    volumes:
+      - type: bind
+        source: /tank/var/www/i.galenguyer.com
+        target: /usr/share/nginx/html
