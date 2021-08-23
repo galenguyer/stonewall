@@ -89,7 +89,7 @@ services:
       - "traefik.http.routers.mastodon-streaming-insecure.rule=(Host(`is-heckin.gay`) && PathPrefix(`/api/v1/streaming`))"
       - "traefik.http.routers.mastodon-streaming-insecure.entrypoints=http"
       - "traefik.http.routers.mastodon-streaming-insecure.service=mastodon-streaming"
-      - "traefik.http.services.mastod-streaming.loadbalancer.server.port=4000"
+      - "traefik.http.services.mastodon-streaming.loadbalancer.server.port=4000"
     networks:
       - traefik
 
