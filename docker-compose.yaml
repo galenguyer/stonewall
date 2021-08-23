@@ -51,10 +51,12 @@ services:
       - "traefik.http.middlewares.secure.headers.customresponseheaders.Expect-CT=enforce,max-age=86400"
       # tohttps middleware
       - "traefik.http.middlewares.tohttps.redirectscheme.scheme=https"
+      # adminauth middleware
+      - "traefik.http.middlewares.adminauth.basicauth.usersfile=/conf/admin.auth"
       # traefik host rules
       - "traefik.http.routers.traefik.rule=Host(`traefik.galenguyer.com`)"
       - "traefik.http.routers.traefik.service=api@internal"
-      - "traefik.http.routers.traefik.middlewares=secure,hsts"
+      - "traefik.http.routers.traefik.middlewares=adminauth,secure,hsts"
       - "traefik.http.routers.traefik.entrypoints=https"
       - "traefik.http.routers.traefik-insecure.rule=Host(`traefik.galenguyer.com`)"
       - "traefik.http.routers.traefik-insecure.middlewares=tohttps"
