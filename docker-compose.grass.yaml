@@ -1,0 +1,22 @@
+services:
+  grass:
+    image: cr.galenguyer.com/nginx/nginx:latest
+    container_name: grass
+    restart: unless-stopped
+    depends_on:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grass.rule=Host(`grass.galenguyer.com`)"
+      - "traefik.http.routers.grass.entrypoints=https"
+      - "traefik.http.routers.grass.service=grass"
+      - "traefik.http.routers.grass-insecure.rule=Host(`grass.galenguyer.com`)"
+      - "traefik.http.routers.grass-insecure.entrypoints=http"
+      - "traefik.http.routers.grass-insecure.middlewares=tohttps"
+      - "traefik.http.services.grass.loadbalancer.server.port=80"
+    networks:
+      - traefik
+    volumes:
+      - type: bind
+        source: /var/www/grass.galenguyer.com
+        target: /usr/share/nginx/html
