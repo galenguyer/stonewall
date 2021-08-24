@@ -1,0 +1,28 @@
+services:
+  ssh:
+    image: cr.galenguyer.com/nginx/php:latest
+    container_name: ssh
+    restart: unless-stopped
+    depends_on:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ssh.rule=Host(`ssh.galenguyer.com`)"
+      - "traefik.http.routers.ssh.entrypoints=https"
+      - "traefik.http.routers.ssh.service=ssh"
+      - "traefik.http.routers.ssh-insecure.rule=Host(`ssh.galenguyer.com`)"
+      - "traefik.http.routers.ssh-insecure.entrypoints=http"
+      - "traefik.http.routers.ssh-insecure.middlewares=tohttps"
+      - "traefik.http.services.ssh.loadbalancer.server.port=80"
+    networks:
+      - traefik
+    volumes:
+      - type: bind
+        source: /var/www/ssh.galenguyer.com
+        target: /var/www/html
+        read_only: true
+      - type: bind
+        source: /home/chef/.ssh
+        target: /var/www/ssh
+        read_only: true
+
