@@ -74,6 +74,7 @@ services:
       - type: bind
         source: ./config/traefik/conf/
         target: /conf/
+        read_only: true
       - type: bind
         source: /var/log/traefik/
         target: /traefik/logs/

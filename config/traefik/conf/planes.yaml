@@ -1,0 +1,22 @@
+http:
+  services:
+    dump1090:
+      loadBalancer:
+        servers:
+          - url: "http://10.1.0.9:8080"
+  routers:
+    # planes.galenguyer.com
+    planes-galenguyer-com-secure:
+      rule: "Host(`planes.galenguyer.com`)"
+      service: "dump1090"
+      entryPoints:
+        - "https"
+      tls:
+        certResolver: "letsencrypt"
+    planes-galenguyer-com-insecure:
+      rule: "Host(`planes.galenguyer.com`)"
+      service: "dump1090"
+      entryPoints:
+        - "http"
+      middlewares:
+        - "tohttps@docker"
