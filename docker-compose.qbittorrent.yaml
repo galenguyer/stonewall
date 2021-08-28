@@ -1,0 +1,35 @@
+services:
+  qbittorrent:
+    image: linuxserver/qbittorrent:amd64-14.2.5.99202004250119-7015-2c65b79ubuntu18.04.1-ls90
+    container_name: qbittorrent
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/New_York
+      - UMASK_SET=022
+      - WEBUI_PORT=8080
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.qbittorrent-webui.rule=Host(`torrent.galenguyer.com`)"
+      - "traefik.http.routers.qbittorrent-webui.entrypoints=https"
+      - "traefik.http.routers.qbittorrent-webui.service=qbittorrent-webui"
+      - "traefik.http.routers.qbittorrent-webui.middlewares=secure"
+      - "traefik.http.services.qbittorrent-webui.loadbalancer.server.port=8080"
+    depends_on:
+      - traefik
+    networks:
+      - traefik
+    ports:
+      - 6881:6881
+      - 6881:6881/udp
+    volumes:
+      - type: volume
+        source: qbittorrent
+        target: /config
+      - type: bind
+        source: /tank/torrents
+        target: /downloads
+
+volumes:
+  qbittorrent:
