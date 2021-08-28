@@ -53,6 +53,8 @@ services:
       - "traefik.http.middlewares.tohttps.redirectscheme.scheme=https"
       # adminauth middleware
       - "traefik.http.middlewares.adminauth.basicauth.usersfile=/conf/admin.auth"
+      # friendauth middleware
+      - "traefik.http.middlewares.friendauth.basicauth.usersfile=/conf/friend.auth"
       # traefik host rules
       - "traefik.http.routers.traefik.rule=Host(`traefik.galenguyer.com`)"
       - "traefik.http.routers.traefik.service=api@internal"
