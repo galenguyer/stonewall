@@ -11,6 +11,7 @@ services:
       - "--api"
       - "--entrypoints.http.address=:80"
       - "--entrypoints.https.address=:443"
+      - "--entrypoints.gitea-ssh.address=:2222"
       - "--certificatesresolvers.letsencrypt.acme.dnschallenge=true"
       - "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare"
       - "--certificatesresolvers.letsencrypt.acme.email=stonewall@galenguyer.com"
@@ -66,6 +67,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "2222:2222"
     networks:
       - traefik
     volumes:
