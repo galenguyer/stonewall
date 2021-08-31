@@ -18,7 +18,7 @@ services:
       - "traefik.http.routers.gitea-insecure.middlewares=tohttps"
       - "traefik.http.services.gitea-web.loadbalancer.server.port=3000"
       - "traefik.tcp.routers.gitea-ssh.rule=HostSNI(`*`)"
-      - "traefik.tcp.routers.gitea-ssh.entrypoints=gitea"
+      - "traefik.tcp.routers.gitea-ssh.entrypoints=gitea-ssh"
       - "traefik.tcp.routers.gitea-ssh.service=gitea-ssh"
       - "traefik.tcp.services.gitea-ssh.loadbalancer.server.port=22"
     networks:
