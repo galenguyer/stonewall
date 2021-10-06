@@ -14,7 +14,7 @@ services:
       - "traefik.http.routers.gpg-insecure.rule=Host(`gpg.galenguyer.com`)"
       - "traefik.http.routers.gpg-insecure.entrypoints=http"
       - "traefik.http.routers.gpg-insecure.middlewares=tohttps"
-      - "traefik.http.services.gpg.loadbalancer.server.port=80"
+      - "traefik.http.services.gpg.loadbalancer.server.port=8080"
     networks:
       - traefik
     volumes:
@@ -23,7 +23,7 @@ services:
         target: /var/www/html
         read_only: true
       - type: bind
-        source: /home/chef/.gnupg
+        source: /root/.gnupg
         target: /var/www/.gnupg
         read_only: true
 
