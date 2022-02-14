@@ -13,10 +13,10 @@ services:
       - "traefik.http.routers.grass-insecure.rule=Host(`grass.galenguyer.com`)"
       - "traefik.http.routers.grass-insecure.entrypoints=http"
       - "traefik.http.routers.grass-insecure.middlewares=tohttps"
-      - "traefik.http.services.grass.loadbalancer.server.port=80"
+      - "traefik.http.services.grass.loadbalancer.server.port=8080"
     networks:
       - traefik
     volumes:
       - type: bind
-        source: /var/www/grass.galenguyer.com
+        source: /tank/var/www/grass.galenguyer.com
         target: /usr/share/nginx/html
